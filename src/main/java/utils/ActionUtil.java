@@ -6,16 +6,15 @@ import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.Base64;
 
@@ -23,46 +22,37 @@ import static drivers.AndroidDriverInstance.*;
 
 public class ActionUtil {
 
-    public static WebElement waitElement(By targetElement, int timeOutInSecond) {
-        WebDriverWait wait = new WebDriverWait(androidDriver, timeOutInSecond);
+    public static AndroidElement waitImageElement(By targetElement, int timeOutInSecond) throws IOException {
         waitABit(1000);
-        return wait.until(ExpectedConditions.presenceOfElementLocated(targetElement));
+        WebDriverWait wait = new WebDriverWait(androidDriver, timeOutInSecond);
+        AndroidElement element = (AndroidElement) wait.until(ExpectedConditions.presenceOfElementLocated(targetElement));
+        if (takeScreenShot) {
+            doElementCapture(element);
+        }
+        return element;
     }
 
-    public static void tapElement(By targetElement) {
+    public static void tapElement(By targetElement) throws IOException {
+        waitABit(1000);
         AndroidElement element = androidDriver.findElement(targetElement);
+        if (takeScreenShot) {
+            doElementCapture(element);
+        }
         element.click();
     }
 
-    public static void getPageScreenshot() throws IOException {
-        System.out.println("Capturing the snapshot of the page");
-        File srcFile = androidDriver.getScreenshotAs(OutputType.FILE);
-
-        String filePath = screenShotDirectory + File.separator;
-
-        int imgNumber = 0;
-        File file = new File(filePath + "pageSS - 0.jpg");
-        while (file.exists()) {
-            imgNumber++;
-            file = new File(filePath + String.format("pageSS - %s.jpg", imgNumber));
-        }
-        FileUtils.copyFile(srcFile, file);
-    }
-
-    public static void getElementOnPageScreenshot(By targetElement) throws IOException {
-
-        AndroidElement element = androidDriver.findElement(targetElement);
+    public static void doElementCapture(AndroidElement element) throws IOException {
+        System.out.println("Capturing the snapshot of the element on the page");
         System.out.printf("Element position = [%s, %s] %n", element.getRect().x, element.getRect().y);
 
         File srcFile = androidDriver.getScreenshotAs(OutputType.FILE);
-
         String filePath = screenShotDirectory + File.separator;
 
         int imgNumber = 0;
-        File file = new File(filePath + "pageSS+Element - 0.jpg");
+        File file = new File(filePath + "Element-0.jpg");
         while (file.exists()) {
             imgNumber++;
-            file = new File(filePath + String.format("pageSS+Element - %s.jpg", imgNumber));
+            file = new File(filePath + String.format("Element-%s.jpg", imgNumber));
         }
 
         FileUtils.copyFile(srcFile, file);
@@ -73,28 +63,33 @@ public class ActionUtil {
         int elY = element.getRect().y;
 
         BufferedImage img = ImageIO.read(file);
-        Graphics2D g2d = img.createGraphics();
+        BufferedImage rgbImage = new BufferedImage(img.getWidth(), img.getHeight(),
+                BufferedImage.TYPE_3BYTE_BGR);
+        ColorConvertOp op = new ColorConvertOp(null);
+        Graphics2D g2d = rgbImage.createGraphics();
+        op.filter(img, rgbImage);
         g2d.setColor(Color.RED);
+        g2d.setStroke(new BasicStroke(10));
+        g2d.setFont(new Font("TimesRoman", Font.PLAIN, 25));
         g2d.drawRect(elX, elY, elW, elH);
+
+        String imgScore = element.getAttribute("score");
+        System.out.printf("Image Match Score = %s %n", element.getAttribute("score"));
+        g2d.drawString(imgScore.substring(0, 5), elX, elY - 10);
+
         g2d.dispose();
 
-        if (takeScreenShot) {
-            System.out.println("Capturing the snapshot of the element on the page");
-            try {
-                ImageIO.write(img, "png", file);
+        try {
+            ImageIO.write(rgbImage, "jpg", file);
 
-            } catch (Exception e) {
-                System.out.println("[ERROR] Could not save image.");
-            }
+        } catch (Exception e) {
+            System.out.println("[ERROR] Could not save image.");
         }
     }
 
-    public static By getImageLocator(String targetImage) throws IOException {
+    public static By getElementByImage(String targetImage) throws IOException {
         File refImgFile = new File(System.getProperty("user.dir") + "/src/main/resources/imageElements/" + targetImage);
         String imageB64 = Base64.getEncoder().encodeToString(Files.readAllBytes(refImgFile.toPath()));
-        if (takeScreenShot) {
-            getElementOnPageScreenshot(MobileBy.image(imageB64));
-        }
         return MobileBy.image(imageB64);
     }
 

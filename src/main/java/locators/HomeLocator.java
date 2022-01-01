@@ -2,5 +2,5 @@ package locators;
 
 public interface HomeLocator {
 
-    String TEXT_COMBAT = "home/text-combat.jpg";
+    String TEXT_TERMINAL = "home/text-terminal.jpg";
 }

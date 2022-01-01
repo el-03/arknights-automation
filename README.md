@@ -13,11 +13,8 @@ For running the code, there are some steps that should be checked
 - firstly, the user has to specify the properties on the 
 
     `src` > `main` > `java` > `config` > `config.properties`
-    
-    The variables that user might only need to change are
-    `deviceName` and `udid`
-    
-- Secondly, the user has to replace the image element of the UI if needed (the existing is using the image element on Samsung A51) in
+   
+- Secondly, the user has to replace the image element of the UI if needed (the existing image element asset is based on Samsung A51) in
 
     `src` > `main` > `resources` > `imageElements`
 

@@ -1,7 +1,7 @@
 # Arknights Automation
 This is the Arknights UI automation for Android. For now, the only available stage is **Tactical Drill LS - 5**. 
 
-The automation is based on cucumber testing framework, The author do aware that it isn't ideal enough to create 
+The automation is based on cucumber testing framework, The author does aware that it isn't ideal enough to create 
 automation script above the testing framework. 
 
 The author will try to rewrite the code in python

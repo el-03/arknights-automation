@@ -6,6 +6,7 @@ automation script above the testing framework.
 
 The author will try to rewrite the code in python
 and simplifying the code. 
+
 ---
 ### Running the Code
 For running the code, there are some steps that should be checked
